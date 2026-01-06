@@ -2,57 +2,66 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const playBtn = document.getElementById("playBtn");
 
-// ====== AJUSTE DE TELA ======
+// ================= AJUSTE DE TELA =================
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// ====== CONTROLE DO JOGO ======
-let gameStarted = false;
+// ================= AUDIO =================
+// IMPORTANTE: o arquivo deve estar no mesmo lugar do index
+const music = new Audio("music.mp3");
+music.loop = true;
+music.volume = 0.5;
 
-// ====== PLAYER ======
+// ================= CONTROLE DO JOGO =================
+let running = false;
+
+// ================= PLAYER =================
 const player = {
   x: canvas.width / 2 - 25,
   y: 100,
   size: 50,
   vy: 0,
   gravity: 0.6,
-  jumpForce: -14
+  jump: -14
 };
 
-// ====== TRAMPOLIM ======
+// ================= PLATAFORMA =================
 const platform = {
   x: canvas.width / 2 - 60,
   y: canvas.height - 200,
-  width: 120,
-  height: 20,
+  w: 120,
+  h: 20,
   speed: 3,
   dir: 1
 };
 
-// ====== SCORE ======
+// ================= SCORE =================
 let score = 0;
-let record = localStorage.getItem("record") || 0;
 
-// ====== TOUCH ======
+// ================= TOUCH =================
 let touching = false;
 
 canvas.addEventListener("touchstart", (e) => {
   e.preventDefault();
   touching = true;
-});
+}, { passive: false });
 
 canvas.addEventListener("touchend", () => {
   touching = false;
 });
 
-// ====== PLAY BUTTON ======
+// ================= PLAY =================
 playBtn.addEventListener("click", () => {
   playBtn.style.display = "none";
-  gameStarted = true;
   resetGame();
+  running = true;
+
+  // música SÓ começa aqui (regra do navegador)
+  music.currentTime = 0;
+  music.play();
 });
 
-// ====== RESET ======
+// ================= RESET =================
 function resetGame() {
   player.x = canvas.width / 2 - 25;
   player.y = 100;
@@ -60,11 +69,11 @@ function resetGame() {
   score = 0;
 }
 
-// ====== UPDATE ======
+// ================= UPDATE =================
 function update() {
-  // trampolim se move
+  // mover plataforma
   platform.x += platform.speed * platform.dir;
-  if (platform.x <= 0 || platform.x + platform.width >= canvas.width) {
+  if (platform.x <= 0 || platform.x + platform.w >= canvas.width) {
     platform.dir *= -1;
   }
 
@@ -76,38 +85,34 @@ function update() {
   if (
     player.vy > 0 &&
     player.y + player.size >= platform.y &&
-    player.y + player.size <= platform.y + platform.height &&
+    player.y + player.size <= platform.y + platform.h &&
     player.x + player.size > platform.x &&
-    player.x < platform.x + platform.width
+    player.x < platform.x + platform.w
   ) {
     player.y = platform.y - player.size;
-    player.vy = player.jumpForce;
+    player.vy = player.jump;
     score++;
-
-    if (score > record) {
-      record = score;
-      localStorage.setItem("record", record);
-    }
   }
 
   // caiu
   if (player.y > canvas.height) {
-    gameStarted = false;
+    running = false;
     playBtn.style.display = "block";
+    music.pause();
   }
 
-  // movimento touch
+  // movimento touch (suave)
   if (touching) {
-    const pc = platform.x + platform.width / 2;
+    const pc = platform.x + platform.w / 2;
     const pl = player.x + player.size / 2;
-    if (pl < pc) player.x += 5;
-    else player.x -= 5;
+    player.x += pl < pc ? 5 : -5;
   }
 
+  // limites
   player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
 }
 
-// ====== DRAW ======
+// ================= DRAW =================
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -115,20 +120,19 @@ function draw() {
   ctx.fillStyle = "#00ffcc";
   ctx.fillRect(player.x, player.y, player.size, player.size);
 
-  // trampolim
+  // plataforma
   ctx.fillStyle = "#ff0066";
-  ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+  ctx.fillRect(platform.x, platform.y, platform.w, platform.h);
 
   // hud
   ctx.fillStyle = "#fff";
   ctx.font = "20px Arial";
   ctx.fillText("Pontos: " + score, 20, 30);
-  ctx.fillText("Recorde: " + record, 20, 55);
 }
 
-// ====== LOOP ======
+// ================= LOOP =================
 function loop() {
-  if (gameStarted) {
+  if (running) {
     update();
     draw();
   }
