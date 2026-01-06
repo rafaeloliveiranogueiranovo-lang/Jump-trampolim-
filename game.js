@@ -1,112 +1,95 @@
-// ===== CANVAS =====
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const tela = {
-  largura: canvas.width,
-  altura: canvas.height
-};
-
 // ===== JOGADOR =====
 const jogador = {
-  x: 100,
+  x: canvas.width / 2 - 15,
   y: 50,
   tamanho: 30,
   velY: 0,
   gravidade: 0.6,
-  forcaDeSalto: -12
+  forcaPulo: -12,
+  podePular: false
 };
 
 // ===== TRAMPOLIM =====
 const trampolim = {
-  x: 100,
-  y: tela.altura - 120,
+  x: canvas.width / 2 - 50,
+  y: canvas.height - 150,
   largura: 100,
   altura: 15,
   velocidade: 3
 };
 
-// ===== CONTROLE =====
-let podePular = false;
-let pontuacao = 0;
-let yAnterior = jogador.y;
+// ===== PONTUAÇÃO =====
+let pontos = 0;
 
-// ===== TOQUE (CELULAR) =====
+// ===== CONTROLE MOBILE (TOQUE) =====
 canvas.addEventListener("touchstart", () => {
-  if (podePular) {
-    jogador.velY = jogador.forcaDeSalto;
-    podePular = false;
+  if (jogador.podePular) {
+    jogador.velY = jogador.forcaPulo;
+    jogador.podePular = false;
   }
 });
 
 // ===== ATUALIZAÇÃO =====
 function atualizar() {
-  // Guarda posição anterior
-  yAnterior = jogador.y;
-
   // Gravidade
   jogador.velY += jogador.gravidade;
   jogador.y += jogador.velY;
 
   // Movimento do trampolim
   trampolim.x += trampolim.velocidade;
-  if (trampolim.x <= 0 || trampolim.x + trampolim.largura >= tela.largura) {
+  if (trampolim.x <= 0 || trampolim.x + trampolim.largura >= canvas.width) {
     trampolim.velocidade *= -1;
   }
 
-  // COLISÃO CORRIGIDA (ANTI-ATRAVESSAR)
+  // Colisão com trampolim
   if (
-    yAnterior + jogador.tamanho <= trampolim.y &&
     jogador.y + jogador.tamanho >= trampolim.y &&
+    jogador.y + jogador.tamanho <= trampolim.y + trampolim.altura &&
     jogador.x + jogador.tamanho >= trampolim.x &&
     jogador.x <= trampolim.x + trampolim.largura &&
     jogador.velY > 0
   ) {
     jogador.y = trampolim.y - jogador.tamanho;
-    jogador.velY = jogador.forcaDeSalto;
-    podePular = true;
-    pontuacao++;
+    jogador.velY = jogador.forcaPulo;
+    jogador.podePular = true;
+    pontos++;
   }
 
   // Caiu no chão
-  if (jogador.y > tela.altura) {
-    resetGame();
+  if (jogador.y > canvas.height) {
+    resetar();
   }
 }
 
 // ===== RESET =====
-function resetGame() {
+function resetar() {
   jogador.y = 50;
   jogador.velY = 0;
-  pontuacao = 0;
+  pontos = 0;
 }
 
 // ===== DESENHO =====
 function desenhar() {
-  // Fundo
-  ctx.fillStyle = "#000";
-  ctx.fillRect(0, 0, tela.largura, tela.altura);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Jogador (quadrado verde)
+  // Jogador
   ctx.fillStyle = "#00ff00";
   ctx.fillRect(jogador.x, jogador.y, jogador.tamanho, jogador.tamanho);
 
-  // Trampolim (laranja)
+  // Trampolim
   ctx.fillStyle = "#ff8800";
-  ctx.fillRect(
-    trampolim.x,
-    trampolim.y,
-    trampolim.largura,
-    trampolim.altura
-  );
+  ctx.fillRect(trampolim.x, trampolim.y, trampolim.largura, trampolim.altura);
 
-  // Pontuação
+  // Pontos
   ctx.fillStyle = "#ffffff";
   ctx.font = "20px Arial";
-  ctx.fillText("Pontos: " + pontuacao, 20, 30);
+  ctx.fillText("Pontos: " + pontos, 20, 30);
 }
 
 // ===== LOOP =====
