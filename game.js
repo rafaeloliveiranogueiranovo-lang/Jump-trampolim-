@@ -1,3 +1,5 @@
+// ===== DEBUG / CONSOLE =====
+console.log("game.js carregou corretamente");
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const playBtn = document.getElementById("playBtn");
