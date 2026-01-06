@@ -10,7 +10,8 @@ const jogador = {
   y: 50,
   tamanho: 30,
   velY: 0,
-  velocidadeX: 5,
+  velX: 0,
+  velocidade: 6,
   gravidade: 0.6,
   forcaPulo: -12
 };
@@ -27,31 +28,37 @@ const trampolim = {
 // ===== PONTOS =====
 let pontos = 0;
 
-// ===== CONTROLE MOBILE =====
-canvas.addEventListener("touchstart", (e) => {
+// ===== CONTROLE TOUCH SUAVE =====
+canvas.addEventListener("touchstart", mover);
+canvas.addEventListener("touchmove", mover);
+canvas.addEventListener("touchend", () => {
+  jogador.velX = 0;
+});
+
+function mover(e) {
   const toqueX = e.touches[0].clientX;
 
-  // Esquerda da tela
   if (toqueX < canvas.width / 2) {
-    jogador.x -= jogador.velocidadeX;
-  } 
-  // Direita da tela
-  else {
-    jogador.x += jogador.velocidadeX;
+    jogador.velX = -jogador.velocidade;
+  } else {
+    jogador.velX = jogador.velocidade;
   }
-});
+}
 
 // ===== ATUALIZAÇÃO =====
 function atualizar() {
-  // Gravidade
-  jogador.velY += jogador.gravidade;
-  jogador.y += jogador.velY;
+  // Movimento horizontal suave
+  jogador.x += jogador.velX;
 
-  // Limites laterais
+  // Limites da tela
   if (jogador.x < 0) jogador.x = 0;
   if (jogador.x + jogador.tamanho > canvas.width) {
     jogador.x = canvas.width - jogador.tamanho;
   }
+
+  // Gravidade
+  jogador.velY += jogador.gravidade;
+  jogador.y += jogador.velY;
 
   // Movimento do trampolim
   trampolim.x += trampolim.velocidade;
