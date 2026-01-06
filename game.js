@@ -12,8 +12,8 @@ const jogador = {
   velX: 0,
   velY: 0,
   velocidade: 6,
-  gravidade: 0.6,
-  forcaPulo: -6
+  gravidade: 0.7,
+  forcaPulo: -15
 };
 
 // ===== TRAMPOLIM =====
