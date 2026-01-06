@@ -2,30 +2,32 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Jogo do Trampolim</title>
+  <title>Trampolim Game</title>
+
+  <!-- Ajuste essencial para celular -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
   <style>
-    body {
+    * {
       margin: 0;
-      background: black;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      padding: 0;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+
+    body {
+      background: #000;
     }
 
     canvas {
-      background: #111;
-      border: 2px solid white;
+      display: block;
     }
   </style>
 </head>
 <body>
 
-  <!-- Área do jogo -->
-  <canvas id="game" width="320" height="240"></canvas>
+  <canvas id="game"></canvas>
 
-  <!-- JavaScript do jogo (TEM que ficar no final) -->
   <script src="game.js"></script>
 
 </body>
