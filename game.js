@@ -8,7 +8,7 @@ canvas.height = window.innerHeight;
 
 // ================= AUDIO =================
 // IMPORTANTE: o arquivo deve estar no mesmo lugar do index
-const music = new Audio("music.mp3");
+const music = new Audio("music.wav");
 music.loop = true;
 music.volume = 0.5;
 
