@@ -1,128 +1,122 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-const playBtn = document.getElementById("playBtn");
-const musica = document.getElementById("bgm");
 
+// Ajuste automático para celular
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// ===== ESTADO =====
-let rodando = false;
-let pontos = 0;
-let recorde = localStorage.getItem("recorde") || 0;
-
-// ===== JOGADOR =====
-const jogador = {
-  x: 100,
+// ================== JOGADOR ==================
+const player = {
+  x: canvas.width / 2 - 25,
   y: 100,
-  size: 30,
-  velY: 0,
-  gravidade: 0.8,
-  pulo: -16
+  size: 50,
+  vy: 0,
+  gravity: 0.6,
+  jumpForce: -14
 };
 
-// ===== TRAMPOLIM =====
-const trampolim = {
-  x: 200,
-  y: canvas.height - 120,
-  largura: 120,
-  altura: 15,
-  vel: 3
+// ================== TRAMPOLIM ==================
+const platform = {
+  x: canvas.width / 2 - 60,
+  y: canvas.height - 200,
+  width: 120,
+  height: 20,
+  speed: 3,
+  dir: 1
 };
 
-// ===== TOQUE =====
-let tocando = false;
+// ================== SCORE ==================
+let score = 0;
+let record = localStorage.getItem("record") || 0;
 
-document.addEventListener("touchstart", () => {
-  tocando = true;
-  if (musica.paused) musica.play();
+// ================== CONTROLE TOUCH ==================
+let touching = false;
+
+canvas.addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  touching = true;
 });
 
-document.addEventListener("touchend", () => {
-  tocando = false;
+canvas.addEventListener("touchend", () => {
+  touching = false;
 });
 
-// ===== PLAY =====
-playBtn.addEventListener("click", () => {
-  iniciarJogo();
-});
-
-// ===== FUNÇÕES =====
-function iniciarJogo() {
-  pontos = 0;
-  jogador.y = 100;
-  jogador.velY = 0;
-  rodando = true;
-  playBtn.style.display = "none";
-}
-
-function resetar() {
-  rodando = false;
-  playBtn.style.display = "block";
-}
-
-function atualizar() {
-  if (!rodando) return;
-
-  // movimento lateral por toque
-  if (tocando) {
-    jogador.x += 5;
+// ================== UPDATE ==================
+function update() {
+  // Movimento do trampolim
+  platform.x += platform.speed * platform.dir;
+  if (platform.x <= 0 || platform.x + platform.width >= canvas.width) {
+    platform.dir *= -1;
   }
 
-  // gravidade
-  jogador.velY += jogador.gravidade;
-  jogador.y += jogador.velY;
+  // Gravidade
+  player.vy += player.gravity;
+  player.y += player.vy;
 
-  // mover trampolim
-  trampolim.x += trampolim.vel;
-  if (trampolim.x <= 0 || trampolim.x + trampolim.largura >= canvas.width) {
-    trampolim.vel *= -1;
-  }
-
-  // colisão
+  // COLISÃO CORRETA (só quando está caindo)
   if (
-    jogador.y + jogador.size >= trampolim.y &&
-    jogador.y + jogador.size <= trampolim.y + trampolim.altura &&
-    jogador.x + jogador.size >= trampolim.x &&
-    jogador.x <= trampolim.x + trampolim.largura &&
-    jogador.velY > 0
+    player.vy > 0 &&
+    player.y + player.size >= platform.y &&
+    player.y + player.size <= platform.y + platform.height &&
+    player.x + player.size > platform.x &&
+    player.x < platform.x + platform.width
   ) {
-    jogador.velY = jogador.pulo;
-    pontos++;
+    player.y = platform.y - player.size;
+    player.vy = player.jumpForce;
+    score++;
 
-    if (pontos > recorde) {
-      recorde = pontos;
-      localStorage.setItem("recorde", recorde);
+    if (score > record) {
+      record = score;
+      localStorage.setItem("record", record);
     }
   }
 
-  // caiu
-  if (jogador.y > canvas.height) {
-    resetar();
+  // Caiu no chão
+  if (player.y > canvas.height) {
+    player.y = 100;
+    player.vy = 0;
+    score = 0;
   }
+
+  // Movimento suave no touch
+  if (touching) {
+    const platformCenter = platform.x + platform.width / 2;
+    const playerCenter = player.x + player.size / 2;
+
+    if (playerCenter < platformCenter) {
+      player.x += 5;
+    } else {
+      player.x -= 5;
+    }
+  }
+
+  // Limites laterais
+  player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
 }
 
-function desenhar() {
+// ================== DRAW ==================
+function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // jogador
-  ctx.fillStyle = "#00ff00";
-  ctx.fillRect(jogador.x, jogador.y, jogador.size, jogador.size);
+  // Jogador
+  ctx.fillStyle = "#00ffcc";
+  ctx.fillRect(player.x, player.y, player.size, player.size);
 
-  // trampolim
-  ctx.fillStyle = "#ff8800";
-  ctx.fillRect(trampolim.x, trampolim.y, trampolim.largura, trampolim.altura);
+  // Trampolim
+  ctx.fillStyle = "#ff0066";
+  ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
 
   // HUD
-  ctx.fillStyle = "#fff";
-  ctx.font = "18px Arial";
-  ctx.fillText("Pontos: " + pontos, 20, 30);
-  ctx.fillText("Recorde: " + recorde, 20, 55);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "20px Arial";
+  ctx.fillText("Pontos: " + score, 20, 30);
+  ctx.fillText("Recorde: " + record, 20, 55);
 }
 
+// ================== LOOP ==================
 function loop() {
-  atualizar();
-  desenhar();
+  update();
+  draw();
   requestAnimationFrame(loop);
 }
 
