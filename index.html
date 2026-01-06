@@ -2,48 +2,47 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Quadrado no Trampolim</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Trampolim de Salto</title>
 
   <style>
     body {
       margin: 0;
       background: #000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      color: #0f0;
+      overflow: hidden;
+      touch-action: none;
       font-family: Arial, sans-serif;
     }
 
     canvas {
+      display: block;
+      margin: auto;
       background: #111;
-      border: 2px solid #0f0;
-      touch-action: none;
     }
 
     #playBtn {
-      margin-top: 10px;
-      padding: 10px 25px;
-      font-size: 18px;
-      background: #0f0;
-      color: #000;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 15px 30px;
+      font-size: 20px;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
+      background: #00ff00;
+      color: #000;
       font-weight: bold;
     }
   </style>
 </head>
 
 <body>
-
-  <!-- ⚠️ ID TEM QUE SER game -->
-  <canvas id="game" width="360" height="600"></canvas>
-
-  <!-- ⚠️ ID TEM QUE SER playBtn -->
   <button id="playBtn">PLAY</button>
+
+  <canvas id="game"></canvas>
+
+  <!-- Música -->
+  <audio id="bgm" src="music.wav" loop></audio>
 
   <script src="game.js"></script>
 </body>
