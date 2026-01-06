@@ -13,16 +13,16 @@ const jogador = {
   velY: 0,
   velocidade: 6,
   gravidade: 0.6,
-  forcaPulo: -35
+  forcaPulo: -78
 };
 
 // ===== TRAMPOLIM =====
 const trampolim = {
   x: canvas.width / 2 - 50,
   y: canvas.height - 150,
-  largura: 100,
+  largura: 110,
   altura: 15,
-  velocidade: 3
+  velocidade: 2
 };
 
 // ===== PONTOS =====
