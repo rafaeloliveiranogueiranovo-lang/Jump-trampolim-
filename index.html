@@ -4,19 +4,22 @@
   <meta charset="UTF-8">
   <title>Trampolim Game</title>
 
-  <!-- Ajuste essencial para celular -->
+  <!-- Essencial para celular -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
   <style>
     * {
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
       overflow: hidden;
-      touch-action: manipulation;
     }
 
-    body {
+    html, body {
+      width: 100%;
+      height: 100%;
       background: #000;
+      touch-action: none; /* MUITO IMPORTANTE pro touch */
     }
 
     canvas {
