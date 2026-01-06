@@ -92,3 +92,56 @@ function loop() {
 }
 
 loop();
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+// Quadrado (player)
+const player = {
+  x: 150,
+  y: 100,
+  size: 20,
+  speed: 3
+};
+
+// Teclas pressionadas
+const keys = {};
+
+// Captura teclas
+window.addEventListener("keydown", (e) => {
+  keys[e.key] = true;
+});
+
+window.addEventListener("keyup", (e) => {
+  keys[e.key] = false;
+});
+
+// Atualiza o jogo
+function update() {
+  // Movimento
+  if (keys["ArrowUp"] || keys["w"]) player.y -= player.speed;
+  if (keys["ArrowDown"] || keys["s"]) player.y += player.speed;
+  if (keys["ArrowLeft"] || keys["a"]) player.x -= player.speed;
+  if (keys["ArrowRight"] || keys["d"]) player.x += player.speed;
+
+  // Limites do canvas
+  player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+  player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
+}
+
+// Desenha tudo
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "red";
+  ctx.fillRect(player.x, player.y, player.size, player.size);
+}
+
+// Loop do jogo
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// Iniciar
+loop();
