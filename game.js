@@ -1,8 +1,12 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
+const playBtn = document.getElementById("playBtn");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+
+// ===== ESTADO DO JOGO =====
+let jogoAtivo = false;
 
 // ===== JOGADOR =====
 const jogador = {
@@ -20,15 +24,22 @@ const jogador = {
 const trampolim = {
   x: canvas.width / 2 - 50,
   y: canvas.height - 150,
-  largura: 110,
+  largura: 100,
   altura: 15,
-  velocidade: 2
+  velocidade: 3
 };
 
 // ===== PONTOS =====
 let pontos = 0;
 
-// ===== CONTROLE TOUCH (CORRIGIDO) =====
+// ===== BOTÃO PLAY =====
+playBtn.addEventListener("click", () => {
+  jogoAtivo = true;
+  playBtn.style.display = "none";
+  resetar();
+});
+
+// ===== CONTROLE TOUCH =====
 canvas.addEventListener(
   "touchstart",
   (e) => {
@@ -57,6 +68,8 @@ canvas.addEventListener(
 );
 
 function mover(e) {
+  if (!jogoAtivo) return;
+
   const toqueX = e.touches[0].clientX;
 
   if (toqueX < canvas.width / 2) {
@@ -68,26 +81,23 @@ function mover(e) {
 
 // ===== ATUALIZAÇÃO =====
 function atualizar() {
-  // Movimento horizontal
+  if (!jogoAtivo) return;
+
   jogador.x += jogador.velX;
 
-  // Limites da tela
   if (jogador.x < 0) jogador.x = 0;
   if (jogador.x + jogador.tamanho > canvas.width) {
     jogador.x = canvas.width - jogador.tamanho;
   }
 
-  // Gravidade
   jogador.velY += jogador.gravidade;
   jogador.y += jogador.velY;
 
-  // Movimento do trampolim
   trampolim.x += trampolim.velocidade;
   if (trampolim.x <= 0 || trampolim.x + trampolim.largura >= canvas.width) {
     trampolim.velocidade *= -1;
   }
 
-  // Colisão com trampolim
   if (
     jogador.y + jogador.tamanho >= trampolim.y &&
     jogador.y + jogador.tamanho <= trampolim.y + trampolim.altura &&
@@ -100,15 +110,17 @@ function atualizar() {
     pontos++;
   }
 
-  // Caiu no chão
   if (jogador.y > canvas.height) {
-    resetar();
+    jogoAtivo = false;
+    playBtn.style.display = "block";
   }
 }
 
 // ===== RESET =====
 function resetar() {
+  jogador.x = canvas.width / 2 - 15;
   jogador.y = 50;
+  jogador.velX = 0;
   jogador.velY = 0;
   pontos = 0;
 }
@@ -117,17 +129,23 @@ function resetar() {
 function desenhar() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Jogador
+  if (!jogoAtivo) {
+    ctx.fillStyle = "#fff";
+    ctx.font = "20px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Toque em PLAY para começar", canvas.width / 2, canvas.height / 2 - 60);
+    return;
+  }
+
   ctx.fillStyle = "#00ff00";
   ctx.fillRect(jogador.x, jogador.y, jogador.tamanho, jogador.tamanho);
 
-  // Trampolim
   ctx.fillStyle = "#ff8800";
   ctx.fillRect(trampolim.x, trampolim.y, trampolim.largura, trampolim.altura);
 
-  // Pontos
   ctx.fillStyle = "#ffffff";
   ctx.font = "20px Arial";
+  ctx.textAlign = "left";
   ctx.fillText("Pontos: " + pontos, 20, 30);
 }
 
