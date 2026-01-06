@@ -8,6 +8,10 @@ canvas.height = window.innerHeight;
 // ===== ESTADO DO JOGO =====
 let jogoAtivo = false;
 
+// ===== RECORDE (SALVO) =====
+let recorde = localStorage.getItem("recordeTrampolim");
+recorde = recorde ? parseInt(recorde) : 0;
+
 // ===== JOGADOR =====
 const jogador = {
   x: canvas.width / 2 - 15,
@@ -98,6 +102,7 @@ function atualizar() {
     trampolim.velocidade *= -1;
   }
 
+  // Colisão
   if (
     jogador.y + jogador.tamanho >= trampolim.y &&
     jogador.y + jogador.tamanho <= trampolim.y + trampolim.altura &&
@@ -110,9 +115,21 @@ function atualizar() {
     pontos++;
   }
 
+  // Caiu
   if (jogador.y > canvas.height) {
-    jogoAtivo = false;
-    playBtn.style.display = "block";
+    fimDeJogo();
+  }
+}
+
+// ===== FIM DE JOGO =====
+function fimDeJogo() {
+  jogoAtivo = false;
+  playBtn.style.display = "block";
+
+  // Atualiza recorde
+  if (pontos > recorde) {
+    recorde = pontos;
+    localStorage.setItem("recordeTrampolim", recorde);
   }
 }
 
@@ -133,7 +150,8 @@ function desenhar() {
     ctx.fillStyle = "#fff";
     ctx.font = "20px Arial";
     ctx.textAlign = "center";
-    ctx.fillText("Toque em PLAY para começar", canvas.width / 2, canvas.height / 2 - 60);
+    ctx.fillText("Recorde: " + recorde, canvas.width / 2, canvas.height / 2 - 80);
+    ctx.fillText("Toque em PLAY para começar", canvas.width / 2, canvas.height / 2 - 40);
     return;
   }
 
@@ -147,6 +165,7 @@ function desenhar() {
   ctx.font = "20px Arial";
   ctx.textAlign = "left";
   ctx.fillText("Pontos: " + pontos, 20, 30);
+  ctx.fillText("Recorde: " + recorde, 20, 55);
 }
 
 // ===== LOOP =====
