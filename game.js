@@ -1,138 +1,129 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const playBtn = document.getElementById("playBtn");
+const musica = document.getElementById("bgm");
 
-// FORÇA O BOTÃO APARECER AO ABRIR O SITE
-playBtn.style.display = "block";
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-let jogoAtivo = false;
+// ===== ESTADO =====
+let rodando = false;
+let pontos = 0;
+let recorde = localStorage.getItem("recorde") || 0;
 
-// Jogador
-let player = {
-  x: canvas.width / 2 - 15,
-  y: 300,
+// ===== JOGADOR =====
+const jogador = {
+  x: 100,
+  y: 100,
   size: 30,
-  vy: 0
+  velY: 0,
+  gravidade: 0.8,
+  pulo: -16
 };
 
-// Trampolim
-let platform = {
-  x: 120,
-  y: 450,
-  width: 120,
-  height: 15,
-  speed: 2
+// ===== TRAMPOLIM =====
+const trampolim = {
+  x: 200,
+  y: canvas.height - 120,
+  largura: 120,
+  altura: 15,
+  vel: 3
 };
 
-// Pontuação
-let score = 0;
-let record = Number(localStorage.getItem("record")) || 0;
+// ===== TOQUE =====
+let tocando = false;
 
-// Controles
-let moveDir = 0;
-
-// ===== TOUCH =====
-canvas.addEventListener("touchstart", e => {
-  const x = e.touches[0].clientX;
-  moveDir = x < window.innerWidth / 2 ? -1 : 1;
+document.addEventListener("touchstart", () => {
+  tocando = true;
+  if (musica.paused) musica.play();
 });
 
-canvas.addEventListener("touchend", () => {
-  moveDir = 0;
+document.addEventListener("touchend", () => {
+  tocando = false;
 });
 
-// ===== TECLADO =====
-document.addEventListener("keydown", e => {
-  if (e.key === "ArrowLeft") moveDir = -1;
-  if (e.key === "ArrowRight") moveDir = 1;
+// ===== PLAY =====
+playBtn.addEventListener("click", () => {
+  iniciarJogo();
 });
 
-document.addEventListener("keyup", () => {
-  moveDir = 0;
-});
-
-// ===== BOTÃO PLAY =====
-playBtn.onclick = () => {
-  resetGame();
-  jogoAtivo = true;
+// ===== FUNÇÕES =====
+function iniciarJogo() {
+  pontos = 0;
+  jogador.y = 100;
+  jogador.velY = 0;
+  rodando = true;
   playBtn.style.display = "none";
-  loop();
-};
-
-// ===== RESET =====
-function resetGame() {
-  player.x = canvas.width / 2 - 15;
-  player.y = 300;
-  player.vy = 0;
-  score = 0;
 }
 
-// ===== GAME OVER =====
-function gameOver() {
-  jogoAtivo = false;
+function resetar() {
+  rodando = false;
   playBtn.style.display = "block";
 }
 
-// ===== LOOP =====
-function loop() {
-  if (!jogoAtivo) return;
+function atualizar() {
+  if (!rodando) return;
 
-  update();
-  draw();
-  requestAnimationFrame(loop);
-}
-
-// ===== UPDATE =====
-function update() {
-  // Gravidade
-  player.vy += 0.6;
-  player.y += player.vy;
-
-  // Movimento
-  player.x += moveDir * 5;
-  player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
-
-  // Trampolim
-  platform.x += platform.speed;
-  if (platform.x <= 0 || platform.x + platform.width >= canvas.width) {
-    platform.speed *= -1;
+  // movimento lateral por toque
+  if (tocando) {
+    jogador.x += 5;
   }
 
-  // Colisão
-  if (
-    player.vy > 0 &&
-    player.y + player.size >= platform.y &&
-    player.y + player.size <= platform.y + platform.height &&
-    player.x + player.size > platform.x &&
-    player.x < platform.x + platform.width
-  ) {
-    player.vy = -14;
-    score++;
+  // gravidade
+  jogador.velY += jogador.gravidade;
+  jogador.y += jogador.velY;
 
-    if (score > record) {
-      record = score;
-      localStorage.setItem("record", record);
+  // mover trampolim
+  trampolim.x += trampolim.vel;
+  if (trampolim.x <= 0 || trampolim.x + trampolim.largura >= canvas.width) {
+    trampolim.vel *= -1;
+  }
+
+  // colisão
+  if (
+    jogador.y + jogador.size >= trampolim.y &&
+    jogador.y + jogador.size <= trampolim.y + trampolim.altura &&
+    jogador.x + jogador.size >= trampolim.x &&
+    jogador.x <= trampolim.x + trampolim.largura &&
+    jogador.velY > 0
+  ) {
+    jogador.velY = jogador.pulo;
+    pontos++;
+
+    if (pontos > recorde) {
+      recorde = pontos;
+      localStorage.setItem("recorde", recorde);
     }
   }
 
-  // Caiu
-  if (player.y > canvas.height) {
-    gameOver();
+  // caiu
+  if (jogador.y > canvas.height) {
+    resetar();
   }
 }
 
-// ===== DRAW =====
-function draw() {
+function desenhar() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = "#0f0";
-  ctx.fillRect(player.x, player.y, player.size, player.size);
+  // jogador
+  ctx.fillStyle = "#00ff00";
+  ctx.fillRect(jogador.x, jogador.y, jogador.size, jogador.size);
 
+  // trampolim
   ctx.fillStyle = "#ff8800";
-  ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+  ctx.fillRect(trampolim.x, trampolim.y, trampolim.largura, trampolim.altura);
 
-  ctx.fillStyle = "#0f0";
+  // HUD
+  ctx.fillStyle = "#fff";
   ctx.font = "18px Arial";
-  ctx.fillText("Pontos: " + score, 10, 25);
-  ctx.fillText("Recorde: " + record, 10, 45);
+  ctx.fillText("Pontos: " + pontos, 20, 30);
+  ctx.fillText("Recorde: " + recorde, 20, 55);
 }
+
+function loop() {
+  atualizar();
+  desenhar();
+  requestAnimationFrame(loop);
+}
+
+loop();
