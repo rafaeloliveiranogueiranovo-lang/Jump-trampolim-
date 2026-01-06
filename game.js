@@ -9,8 +9,8 @@ const jogador = {
   x: canvas.width / 2 - 15,
   y: 50,
   tamanho: 30,
-  velY: 0,
   velX: 0,
+  velY: 0,
   velocidade: 6,
   gravidade: 0.6,
   forcaPulo: -12
@@ -28,12 +28,33 @@ const trampolim = {
 // ===== PONTOS =====
 let pontos = 0;
 
-// ===== CONTROLE TOUCH SUAVE =====
-canvas.addEventListener("touchstart", mover);
-canvas.addEventListener("touchmove", mover);
-canvas.addEventListener("touchend", () => {
-  jogador.velX = 0;
-});
+// ===== CONTROLE TOUCH (CORRIGIDO) =====
+canvas.addEventListener(
+  "touchstart",
+  (e) => {
+    e.preventDefault();
+    mover(e);
+  },
+  { passive: false }
+);
+
+canvas.addEventListener(
+  "touchmove",
+  (e) => {
+    e.preventDefault();
+    mover(e);
+  },
+  { passive: false }
+);
+
+canvas.addEventListener(
+  "touchend",
+  (e) => {
+    e.preventDefault();
+    jogador.velX = 0;
+  },
+  { passive: false }
+);
 
 function mover(e) {
   const toqueX = e.touches[0].clientX;
@@ -47,7 +68,7 @@ function mover(e) {
 
 // ===== ATUALIZAÇÃO =====
 function atualizar() {
-  // Movimento horizontal suave
+  // Movimento horizontal
   jogador.x += jogador.velX;
 
   // Limites da tela
