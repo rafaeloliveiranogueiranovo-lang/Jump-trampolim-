@@ -10,9 +10,9 @@ const jogador = {
   y: 50,
   tamanho: 30,
   velY: 0,
+  velocidadeX: 5,
   gravidade: 0.6,
-  forcaPulo: -12,
-  podePular: false
+  forcaPulo: -12
 };
 
 // ===== TRAMPOLIM =====
@@ -24,14 +24,20 @@ const trampolim = {
   velocidade: 3
 };
 
-// ===== PONTUAÇÃO =====
+// ===== PONTOS =====
 let pontos = 0;
 
-// ===== CONTROLE MOBILE (TOQUE) =====
-canvas.addEventListener("touchstart", () => {
-  if (jogador.podePular) {
-    jogador.velY = jogador.forcaPulo;
-    jogador.podePular = false;
+// ===== CONTROLE MOBILE =====
+canvas.addEventListener("touchstart", (e) => {
+  const toqueX = e.touches[0].clientX;
+
+  // Esquerda da tela
+  if (toqueX < canvas.width / 2) {
+    jogador.x -= jogador.velocidadeX;
+  } 
+  // Direita da tela
+  else {
+    jogador.x += jogador.velocidadeX;
   }
 });
 
@@ -40,6 +46,12 @@ function atualizar() {
   // Gravidade
   jogador.velY += jogador.gravidade;
   jogador.y += jogador.velY;
+
+  // Limites laterais
+  if (jogador.x < 0) jogador.x = 0;
+  if (jogador.x + jogador.tamanho > canvas.width) {
+    jogador.x = canvas.width - jogador.tamanho;
+  }
 
   // Movimento do trampolim
   trampolim.x += trampolim.velocidade;
@@ -57,7 +69,6 @@ function atualizar() {
   ) {
     jogador.y = trampolim.y - jogador.tamanho;
     jogador.velY = jogador.forcaPulo;
-    jogador.podePular = true;
     pontos++;
   }
 
