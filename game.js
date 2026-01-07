@@ -22,9 +22,10 @@ const player = {
   x: canvas.width / 2 - 25,
   y: 100,
   size: 50,
+  vx: 0,
   vy: 0,
   gravity: 0.6,
-  jump: -14
+  launched: false
 };
 
 // ================= PLATAFORMA =================
@@ -37,6 +38,13 @@ const platform = {
   dir: 1
 };
 
+function resetRound() {
+  player.x = 180;
+  player.y = 500;
+  player.vx = 0;
+  player.vy = 0;
+  player.launched = false;
+}
 // ================= SCORE =================
 let score = 0;
 
@@ -85,15 +93,16 @@ function update() {
 
   // colisão correta
   if (
-    player.vy > 0 &&
-    player.y + player.size >= platform.y &&
-    player.y + player.size <= platform.y + platform.h &&
-    player.x + player.size > platform.x &&
-    player.x < platform.x + platform.w
-  ) {
-    player.y = platform.y - player.size;
-    player.vy = player.jump;
-    score++;
+  player.y + player.size > platform.y &&
+  player.y < platform.y + platform.h &&
+  player.x + player.size > platform.x &&
+  player.x < platform.x + platform.w &&
+  player.vy > 0
+) {
+  console.log("ACERTOU");
+
+  score++;
+  resetRound();
   }
 
   // caiu
